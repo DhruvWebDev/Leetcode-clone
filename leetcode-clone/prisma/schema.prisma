@@ -1,0 +1,51 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id          Int          @id @default(autoincrement())
+  email       String       @unique
+  name        String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  problemSets ProblemSet[] // Relation to ProblemSet
+  score       Int // User's score
+  Leaderboard Leaderboard?
+  UserCode    UserCode[]
+}
+
+model ProblemSet {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  difficulty  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  authorId    Int
+  author      User     @relation(fields: [authorId], references: [id])
+}
+
+model Leaderboard {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserCode {
+  id        Int      @id @default(autoincrement()) // Unique ID for each code submission
+  code      String // The code that the user ran
+  language  String // The programming language used (optional, but useful)
+  createdAt DateTime @default(now()) // Timestamp when the code was submitted
+  updatedAt DateTime @updatedAt // Timestamp when the code was last updated
+  userId    Int // Foreign key to User model
+  user      User     @relation(fields: [userId], references: [id]) // Relationship to User model
+  testCases String // The test cases that were run against the code (in string format, could be JSON or simple text)
+}
